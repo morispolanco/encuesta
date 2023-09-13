@@ -3,42 +3,44 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Cargar los datos de la encuesta
-data = pd.read_csv('encuesta.csv')
+def main():
+    # Configurar la interfaz de Streamlit
+    st.title('Análisis de Resultados de Encuesta')
 
-# Función para generar el informe numérico
-def generate_numeric_report():
-    st.title('Informe Numérico')
-    st.write('---')
-    st.write('**Total de respuestas:**', len(data))
-    st.write('---')
-    st.write('**Preguntas y respuestas:**')
-    for column in data.columns:
-        st.write(f'**{column}:**')
-        st.write(data[column].value_counts())
-        st.write('---')
+    # Widget para cargar el archivo CSV
+    uploaded_file = st.file_uploader('Cargar archivo CSV de encuesta', type='csv')
 
-# Función para generar el informe gráfico
-def generate_visual_report():
-    st.title('Informe Gráfico')
-    st.write('---')
-    st.write('**Gráfico de barras:**')
-    for column in data.columns:
-        if data[column].dtype == 'object':
-            plt.figure(figsize=(10, 6))
-            sns.countplot(data[column])
-            plt.xticks(rotation=45)
-            st.pyplot()
-            st.write('---')
+    # Verificar si se ha cargado un archivo
+    if uploaded_file is not None:
+        # Leer el archivo CSV
+        data = pd.read_csv(uploaded_file)
 
-# Configurar la interfaz de Streamlit
-st.title('Análisis de Resultados de Encuesta')
+        # Mostrar los datos de la encuesta
+        st.write('**Datos de la encuesta:**')
+        st.write(data)
 
-# Mostrar las opciones de informe
-report_type = st.radio('Selecciona el tipo de informe:', ('Numérico', 'Gráfico'))
+        # Realizar análisis numérico
+        st.write('**Análisis numérico de la encuesta:**')
+        st.write(data.describe())
 
-# Generar el informe seleccionado
-if report_type == 'Numérico':
-    generate_numeric_report()
-elif report_type == 'Gráfico':
-    generate_visual_report()
+        # Realizar análisis gráfico
+        st.write('**Análisis gráfico de la encuesta:**')
+        for column in data.columns:
+            if data[column].dtype == 'object':
+                # Gráfico de barras para variables categóricas
+                plt.figure(figsize=(10, 6))
+                sns.countplot(data=data, x=column)
+                plt.xticks(rotation=45)
+                st.pyplot()
+
+            else:
+                # Histograma para variables numéricas
+                plt.figure(figsize=(10, 6))
+                sns.histplot(data=data, x=column, kde=True)
+                st.pyplot()
+
+    else:
+        st.write('Esperando a que se cargue un archivo...')
+
+if __name__ == '__main__':
+    main()
